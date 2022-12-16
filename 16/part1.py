@@ -49,11 +49,10 @@ def compute_shortest_paths():
     for x in flow.keys():
         cost[(x, x)] = 0
 
-    # for t in range(100):
-    for x in flow.keys():
-        for y in flow.keys():
-            for z in flow.keys():
-                cost[(x, z)] = min(cost[(x, z)], cost[(x, y)] + cost[(y, z)])
+    for z in flow.keys():
+        for x in flow.keys():
+            for y in flow.keys():
+                cost[(x, y)] = min(cost[(x, y)], cost[(x, z)] + cost[(z, y)])
 
 
 N_ROUNDS = 30
@@ -84,12 +83,12 @@ def explore(node, active_so_far, released_so_far, t):
 
 compute_shortest_paths()
 
-# print('      ' + '  '.join(sorted(flow.keys())))
-# for x in sorted(flow.keys()):
-#     print("%s: " % x, end='')
-#     for y in sorted(flow.keys()):
-#         print("%r   " % cost[(x, y)], end='')
-#     print()
+print('      ' + '  '.join(sorted(flow.keys())))
+for x in sorted(flow.keys()):
+    print("%s: " % x, end='')
+    for y in sorted(flow.keys()):
+        print("%r   " % cost[(x, y)], end='')
+    print()
 # explore("AA", [], 0, 0)
 
 nonzero_nodes = list(filter(lambda x: flow[x] > 0, flow.keys()))
@@ -106,7 +105,7 @@ while True:
     for x in nonzero_nodes:
         distance = cost[(current, x)]
 
-        if t + distance >= N_ROUNDS:
+        if t + distance + 1 > N_ROUNDS:
             # print(
             #     "Can't move any more, will stay in node %s until the end of time"
             #     % current)
@@ -122,11 +121,14 @@ while True:
             # Open newly visited valve
             current = x
             total_flow += flow_per_round
-            flow_per_round += flow[current]
             t += 1
+            flow_per_round += flow[current]
 
     total_flow += flow_per_round * (N_ROUNDS - t)
 
     if total_flow > best:
         best = total_flow
-        print("Found new best=%d using sequence %r" % (best, nonzero_nodes[:nonzero_nodes.index(x)+1]))
+        print("Found new best=%d using sequence %r" %
+              (best, nonzero_nodes[:nonzero_nodes.index(x) + 1]))
+
+# Found new best=1673 using sequence ['OK', 'HF', 'CQ', 'GV', 'GR', 'JI', 'XM', 'OH', 'UN']
