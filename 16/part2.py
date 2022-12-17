@@ -21,21 +21,6 @@ for line in lines:
         print("no match, check input or regex")
         exit(1)
 
-# for s in dsts.keys():
-#     dsts[s] = sorted(dsts[s], key=lambda x: flow[x], reverse=True)
-
-# print("%r" % flow)
-# print("%r" % dsts)
-
-# dp[t, s, 0/1] = maximum profit that can be obtained starting at time <t> in node <s>, having it open/closed
-
-# dp = defaultdict(int)
-# for t in range(29, -1, -1):
-#     for s in flow.keys():
-
-#         # assume s is open
-#         pass
-
 cost = {}
 
 
@@ -55,31 +40,8 @@ def compute_shortest_paths():
                 cost[(x, y)] = min(cost[(x, y)], cost[(x, z)] + cost[(z, y)])
 
 
-N_ROUNDS = 25
-
+N_ROUNDS = 26
 best = 0
-
-
-def explore(node, active_so_far, released_so_far, t):
-    global best
-    if released_so_far > best:
-        best = released_so_far
-        print("New best released after %d rounds: %d (%r)" %
-              (t, best, active_so_far))
-
-    if t == N_ROUNDS:
-        return 0
-
-    round_flow = sum(map(flow.get, active_so_far))
-    # print("This round at t=%d gives us %d flow" % (t, round_flow))
-
-    for neighbor in dsts[node]:
-        explore(neighbor, active_so_far, released_so_far + round_flow, t + 1)
-
-    if flow[node] > 0 and node not in active_so_far:
-        explore(node, active_so_far + [node], released_so_far + round_flow,
-                t + 1)
-
 
 compute_shortest_paths()
 
@@ -89,7 +51,6 @@ for x in sorted(flow.keys()):
     for y in sorted(flow.keys()):
         print("%r   " % cost[(x, y)], end='')
     print()
-# explore("AA", [], 0, 0)
 
 nonzero_nodes = list(filter(lambda x: flow[x] > 0, flow.keys()))
 print(nonzero_nodes)
@@ -97,12 +58,12 @@ print(nonzero_nodes)
 best = 0
 while True:
     shuffle(nonzero_nodes)
-    mid = len(nonzero_nodes)//2
+    mid = len(nonzero_nodes) // 2
 
     xs = nonzero_nodes[:mid]
     ys = nonzero_nodes[mid:]
 
-    flow_per_round = [0 for _ in range(N_ROUNDS+1)]
+    flow_per_round = [0 for _ in range(N_ROUNDS + 1)]
 
     for nodes in (xs, ys):
         current = 'AA'
@@ -125,14 +86,14 @@ while True:
                 flow_per_round[t] += flow[current]
 
     total_flow = 0
-    for i in range(1, len(flow_per_round)):
-        flow_per_round[i] += flow_per_round[i-1]
+    for i in range(1, N_ROUNDS):
+        flow_per_round[i] += flow_per_round[i - 1]
         total_flow += flow_per_round[i]
 
     if total_flow > best:
         best = total_flow
-        print("Found new best=%d using sequence %r" %
-              (best, nonzero_nodes[:nonzero_nodes.index(x) + 1]))
+        print(
+            "Found new best=%d using sequence %r for me and %r for elephant" %
+            (best, xs, ys))
 
-# Found new best=1673 using sequence ['OK', 'HF', 'CQ', 'GV', 'GR', 'JI', 'XM', 'OH', 'UN']
-# Found new best=1673 using sequence ['OK', 'HF', 'CQ', 'GV', 'GR', 'JI', 'XM', 'OH', 'HX']
+# Found new best=2343 using sequence ['OK', 'HF', 'CQ', 'GV', 'HX', 'IR', 'UN', 'GR', 'JI', 'XM', 'OH', 'BX', 'GB', 'LC']
