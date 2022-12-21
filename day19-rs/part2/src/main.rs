@@ -36,7 +36,7 @@ fn explore(
     let (o, c, b, g) = resources;
     if t == args.tmax {
         if &g > best {
-            println!("Found new best: {} ({})", g, history);
+            println!("Found new best: {} via\n{}", g, history);
             *best = g;
         }
         return g;
