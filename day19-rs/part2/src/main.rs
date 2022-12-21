@@ -29,13 +29,14 @@ fn explore(
     best: &mut u32,
     robots: (u32, u32, u32, u32),
     resources: (u32, u32, u32, u32),
+    history: String,
     t: u32,
 ) -> u32 {
     let (or, cr, br, gr) = robots;
     let (o, c, b, g) = resources;
     if t == args.tmax {
         if &g > best {
-            println!("Found new best: {}", g);
+            println!("Found new best: {} ({})", g, history);
             *best = g;
         }
         return g;
@@ -58,6 +59,7 @@ fn explore(
                 best,
                 (or, cr, br, gr + 1),
                 (o + or - gc[0], c + cr, b + br - gc[1], g + gr),
+                format!("{}g", history),
                 t + 1,
             ),
         );
@@ -72,6 +74,7 @@ fn explore(
                 best,
                 (or, cr, br + 1, gr),
                 (o + or - bc[0], c + cr - bc[1], b + br, g + gr),
+                format!("{}b", history),
                 t + 1,
             ),
         );
@@ -86,6 +89,7 @@ fn explore(
                 best,
                 (or, cr + 1, br, gr),
                 (o + or - cc, c + cr, b + br, g + gr),
+                format!("{}c", history),
                 t + 1,
             ),
         );
@@ -100,6 +104,7 @@ fn explore(
                 best,
                 (or + 1, cr, br, gr),
                 (o + or - oc, c + cr, b + br, g + gr),
+                format!("{}o", history),
                 t + 1,
             ),
         );
@@ -113,6 +118,7 @@ fn explore(
             best,
             (or, cr, br, gr),
             (o + or, c + cr, b + br, g + gr),
+            format!("{}.", history),
             t + 1,
         ),
     );
@@ -210,6 +216,7 @@ fn main() {
             &mut best,
             (1, 0, 0, 0),
             (0, 0, 0, 0),
+            String::new(),
             0,
         );
     }
