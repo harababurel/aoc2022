@@ -62,7 +62,7 @@ fn explore(
             ),
         );
     }
-    if t + 1 < args.tmax && o >= bc[0] && c >= bc[1]  && &rng.gen::<f32>() <= &args.pb {
+    if t + 1 < args.tmax && o >= bc[0] && c >= bc[1] && &rng.gen::<f32>() <= &args.pb {
         ret = std::cmp::max(
             ret,
             explore(
@@ -76,7 +76,7 @@ fn explore(
             ),
         );
     }
-    if t + 1 < args.tmax && o >= *cc  && &rng.gen::<f32>() <= &args.pc {
+    if t + 1 < args.tmax && o >= *cc && &rng.gen::<f32>() <= &args.pc {
         ret = std::cmp::max(
             ret,
             explore(
@@ -90,7 +90,7 @@ fn explore(
             ),
         );
     }
-    if t + 1 < args.tmax && o >= *oc  && &rng.gen::<f32>() <= &args.po {
+    if t + 1 < args.tmax && o >= *oc && &rng.gen::<f32>() <= &args.po {
         ret = std::cmp::max(
             ret,
             explore(
@@ -190,18 +190,32 @@ fn main() {
     let mut rng = rand::thread_rng();
 
     let mut best = 0;
-    let ans = explore(
-        &args,
-        &mut rng,
-        &blueprint,
-        &mut best,
-        (1, 0, 0, 0),
-        (0, 0, 0, 0),
-        0,
-    );
-    println!(
-        "Answer for blueprint {} is {}",
-        blueprint.id,
-        style(ans).red()
-    );
+
+    let randargs = Cli {
+        blueprint: args.blueprint,
+        tmax: args.tmax,
+        po: rng.gen::<f32>(),
+        pc: rng.gen::<f32>(),
+        pb: rng.gen::<f32>(),
+        pg: rng.gen::<f32>(),
+    };
+
+    println!("Running with config: {:#?}", randargs);
+
+    loop {
+        let ans = explore(
+            &randargs,
+            &mut rng,
+            &blueprint,
+            &mut best,
+            (1, 0, 0, 0),
+            (0, 0, 0, 0),
+            0,
+        );
+    }
+    // println!(
+    //     "Answer for blueprint {} is {}",
+    //     blueprint.id,
+    //     style(ans).red()
+    // );
 }
