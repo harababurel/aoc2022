@@ -49,79 +49,38 @@ fn explore(
     let cc = &bp.clay_robot_cost;
     let oc = &bp.ore_robot_cost;
 
-    if o >= gc[0] && b >= gc[1] && &rng.gen::<f32>() <= &args.pg {
-        ret = std::cmp::max(
-            ret,
-            explore(
-                args,
-                rng,
-                bp,
-                best,
-                (or, cr, br, gr + 1),
-                (o + or - gc[0], c + cr, b + br - gc[1], g + gr),
-                format!("{}g", history),
-                t + 1,
-            ),
-        );
+    let mut should_buy_g = o >= gc[0] && b >= gc[1] && &rng.gen::<f32>() <= &args.pg;
+    let mut should_buy_b = t + 1 < args.tmax && o >= bc[0] && c >= bc[1] && &rng.gen::<f32>() <= &args.pb;
+    let mut should_buy_c = t + 1 < args.tmax && o >= *cc && &rng.gen::<f32>() <= &args.pc;
+    let mut should_buy_o = t + 1 < args.tmax && o >= *oc && &rng.gen::<f32>() <= &args.po;
+
+    if history.chars().last() == Some('.') {
+        if (o-or) >= *oc { // could have bought this robot last round
+            should_buy_o = false;
+        }
+        if (o-or) >= *cc { // could have bought this robot last round
+            should_buy_c = false;
+        }
+        if (o-or) >= bc[0] && (c-cr) >= bc[1] { // could have bought this robot last round
+            should_buy_b = false;
+        }
+        if (o-or) >= gc[0] && (b-br) >= gc[1] { // could have bought this robot last round
+            should_buy_g = false;
+        }
     }
-    if t + 1 < args.tmax && o >= bc[0] && c >= bc[1] && &rng.gen::<f32>() <= &args.pb {
-        ret = std::cmp::max(
-            ret,
-            explore(
-                args,
-                rng,
-                bp,
-                best,
-                (or, cr, br + 1, gr),
-                (o + or - bc[0], c + cr - bc[1], b + br, g + gr),
-                format!("{}b", history),
-                t + 1,
-            ),
-        );
-    }
-    if t + 1 < args.tmax && o >= *cc && &rng.gen::<f32>() <= &args.pc {
-        ret = std::cmp::max(
-            ret,
-            explore(
-                args,
-                rng,
-                bp,
-                best,
-                (or, cr + 1, br, gr),
-                (o + or - cc, c + cr, b + br, g + gr),
-                format!("{}c", history),
-                t + 1,
-            ),
-        );
-    }
-    if t + 1 < args.tmax && o >= *oc && &rng.gen::<f32>() <= &args.po {
-        ret = std::cmp::max(
-            ret,
-            explore(
-                args,
-                rng,
-                bp,
-                best,
-                (or + 1, cr, br, gr),
-                (o + or - oc, c + cr, b + br, g + gr),
-                format!("{}o", history),
-                t + 1,
-            ),
-        );
-    }
-    ret = std::cmp::max(
-        ret,
-        explore(
-            args,
-            rng,
-            bp,
-            best,
-            (or, cr, br, gr),
-            (o + or, c + cr, b + br, g + gr),
-            format!("{}.", history),
-            t + 1,
-        ),
-    );
+
+//     if or >= *oc && or >= *cc && or >= bc[0] && or >= gc[0] {
+//         should_buy_o = false;
+//     }
+    // if cr >= bc[1] {
+    //     should_buy_c = false;
+    // }
+    ret = std::cmp::max(ret,explore(args,rng,bp,best,(or, cr, br, gr),(o + or, c + cr, b + br, g + gr),format!("{}.", history),t + 1,),);
+    if should_buy_g { ret = std::cmp::max(ret,explore(args,rng,bp,best,(or, cr, br, gr + 1),(o + or - gc[0], c + cr, b + br - gc[1], g + gr),format!("{}g", history),t + 1,),); }
+    if should_buy_b { ret = std::cmp::max(ret,explore(args,rng,bp,best,(or, cr, br + 1, gr),(o + or - bc[0], c + cr - bc[1], b + br, g + gr),format!("{}b", history),t + 1,),); }
+    if should_buy_c { ret = std::cmp::max(ret,explore(args,rng,bp,best,(or, cr + 1, br, gr),(o + or - cc, c + cr, b + br, g + gr),format!("{}c", history),t + 1,),); }
+    if should_buy_o { ret = std::cmp::max(ret,explore(args,rng,bp,best,(or + 1, cr, br, gr),(o + or - oc, c + cr, b + br, g + gr),format!("{}o", history),t + 1,),); }
+
     ret
 }
 
@@ -197,32 +156,30 @@ fn main() {
 
     let mut best = 0;
 
-    let randargs = Cli {
-        blueprint: args.blueprint,
-        tmax: args.tmax,
-        po: rng.gen::<f32>(),
-        pc: rng.gen::<f32>(),
-        pb: rng.gen::<f32>(),
-        pg: rng.gen::<f32>(),
-    };
+    // let randargs = Cli {
+    //     blueprint: args.blueprint,
+    //     tmax: args.tmax,
+    //     po: rng.gen::<f32>(),
+    //     pc: rng.gen::<f32>(),
+    //     pb: rng.gen::<f32>(),
+    //     pg: rng.gen::<f32>(),
+    // };
 
-    println!("Running with config: {:#?}", randargs);
+    println!("Running with config: {:#?}", args);
 
-    loop {
-        let ans = explore(
-            &randargs,
-            &mut rng,
-            &blueprint,
-            &mut best,
-            (1, 0, 0, 0),
-            (0, 0, 0, 0),
-            String::new(),
-            0,
-        );
-    }
-    // println!(
-    //     "Answer for blueprint {} is {}",
-    //     blueprint.id,
-    //     style(ans).red()
-    // );
+    let ans = explore(
+        &args,
+        &mut rng,
+        &blueprint,
+        &mut best,
+        (1, 0, 0, 0),
+        (0, 0, 0, 0),
+        String::new(),
+        0,
+    );
+    println!(
+        "Answer for blueprint {} is {}",
+        blueprint.id,
+        style(ans).red()
+    );
 }
