@@ -23,49 +23,39 @@ use tabled::{
 static DIRS: [(i32, i32); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
 
 #[derive(Parser, Debug)]
-struct Blueprint {
-    #[clap(long, default_value_t = 1)]
-    id: u32,
-    #[clap(short, long, default_value_t = 1)]
-    ore_robot_cost: u32,
-    #[clap(short, long, default_value_t = 1)]
-    clay_robot_cost: u32,
-    #[clap(short = 'b', long)]
-    obsidian_robot_cost: Vec<u32>,
-    #[clap(short, long)]
-    geode_robot_cost: Vec<u32>,
-}
-#[derive(Parser, Debug)]
 struct Cli {
     #[clap(short, long, default_value_t = String::from("ex.in"))]
     input_file: String,
 }
 
-fn display_grid(grid: &Vec<&str>) {
+fn display_grid(grid: &Vec<Vec<char>>) {
     grid.iter().for_each(|line| {
-        println!("{}", line);
+        line.iter().for_each(|c| {
+            print!("{}", c);
+        });
+        println!();
     });
     println!();
 }
 
-fn starting_point(grid: &Vec<&str>) -> (usize, usize) {
-    let j = grid[0].chars().take_while(|c| *c == ' ').count();
+fn starting_point(grid: &Vec<Vec<char>>) -> (usize, usize) {
+    let j = grid[0].iter().take_while(|c| **c == ' ').count();
 
     (0, j)
 }
 
-fn next(grid: &Vec<&str>, p: (usize, usize), dir_id: usize) -> (usize, usize) {
+fn next(grid: &Vec<Vec<char>>, p: (usize, usize), dir_id: usize) -> (usize, usize) {
     let delta = DIRS[dir_id];
     let n = grid.len() as i32;
     let m = grid[0].len() as i32;
 
     let mut q = (
-        (p.0 as i32 + delta.0 + n) % n,
-        (p.1 as i32 + delta.1 + m) % m,
+        (p.0 as i32 + delta.0 + 5 * n) % n,
+        (p.1 as i32 + delta.1 + 5 * m) % m,
     );
 
-    while grid[q.0 as usize].chars().nth(q.1 as usize) == Some(' ') {
-        q = ((q.0 + delta.0 + n) % n, (q.1 + delta.1 + m) % m);
+    while grid[q.0 as usize][q.1 as usize] == ' ' {
+        q = ((q.0 + n + delta.0) % n, (q.1 + m + delta.1) % m);
     }
 
     (q.0 as usize, q.1 as usize)
@@ -91,9 +81,10 @@ fn get_ops(s: &str) -> Vec<Either<char, usize>> {
     ops
 }
 
-fn explore(grid: &Vec<&str>, ops: &Vec<Either<char, usize>>) -> usize {
+fn explore(grid: &mut Vec<Vec<char>>, ops: &Vec<Either<char, usize>>) -> usize {
     let mut p = starting_point(grid);
     let mut dir_id = 0;
+    let arrows = ['>', 'v', '<', '^'];
 
     for op in ops {
         if op == &Either::Left('L') {
@@ -107,9 +98,10 @@ fn explore(grid: &Vec<&str>, ops: &Vec<Either<char, usize>>) -> usize {
             for _ in 0..steps {
                 let q = next(grid, p, dir_id);
 
-                if grid[q.0].chars().nth(q.1) == Some('#') {
+                if grid[q.0][q.1] == '#' {
                     break;
                 } else {
+                    grid[p.0][p.1] = arrows[dir_id as usize];
                     p = q;
                 }
             }
@@ -127,26 +119,36 @@ fn explore(grid: &Vec<&str>, ops: &Vec<Either<char, usize>>) -> usize {
 
 fn main() {
     let args = Cli::parse();
-    // let pb = ProgressBar::new(args.nmax as u64);
 
     let contents =
         fs::read_to_string(args.input_file).expect("Should have been able to read the file");
 
     let lines: Vec<&str> = contents.split('\n').collect();
     let lc = lines.len();
-    println!("Ops str: {:?}", lines[lines.len() - 2]);
+    // println!("Ops str: {:?}", lines[lines.len() - 2]);
     let ops = get_ops(lines[lines.len() - 2]);
-    let grid = lines.into_iter().take(lc - 2).collect();
+    let mut grid: Vec<Vec<char>> = lines
+        .into_iter()
+        .take(lc - 3)
+        .map(|line| line.chars().clone().collect())
+        .collect();
+
+    let max_width = grid.iter().map(|l| l.len()).max().unwrap();
+    for i in 0..grid.len() {
+        while grid[i].len() < max_width {
+            grid[i].push(' ');
+        }
+    }
+
     display_grid(&grid);
     // println!("Ops: {:?}", ops);
 
     let s = starting_point(&grid);
     println!("Starting point: {:?}", s);
-    assert!(grid[s.0].chars().nth(s.1).unwrap() != ' ');
-    assert!(grid[s.0].chars().nth(s.1 - 1).unwrap() == ' ');
+    assert!(grid[s.0][s.1] != ' ');
+    assert!(grid[s.0][s.1 - 1] == ' ');
 
-    let ans = explore(&grid, &ops);
+    let ans = explore(&mut grid, &ops);
+    // display_grid(&grid);
     println!("Answer is {}", style(ans).red());
 }
-
-// 163590 too high
