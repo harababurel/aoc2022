@@ -1,0 +1,20 @@
+[package]
+name = "day24p2-rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "*", features = ["derive"] }
+combination = "0.2.2"
+console = "*"
+indicatif = {version = "*", features = ["rayon"]}
+num = "*"
+primal = "*"
+rand = "*"
+either = "*"
+rayon = "*"
+serde = { version = "1.0", features = ["derive"]}
+serde_json = "1.0"
+tabled = "0.7"
