@@ -2,6 +2,10 @@
 import sys
 import re
 from copy import deepcopy
+"""
+ABANDONED
+Reimplemented in Rust
+"""
 
 lines = list(map(str.strip, sys.stdin))
 print(lines)
@@ -10,7 +14,6 @@ tmax = 24
 
 
 class Blueprint:
-
     def __init__(self, b_id, orc, crc, brc, grc):
         self.b_id = b_id
         self.orc = orc
@@ -20,7 +23,6 @@ class Blueprint:
 
 
 class State:
-
     def __init__(self, nor=1, ncr=0, nbr=0, ngr=0, o=0, c=0, b=0, g=0, t=0):
         self.nor = nor
         self.ncr = ncr
