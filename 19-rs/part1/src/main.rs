@@ -1,24 +1,6 @@
-#![allow(dead_code)]
-#![allow(unreachable_code)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-
 use clap::Parser;
-use combination::*;
 use console::style;
-use indicatif::{ParallelProgressIterator, ProgressBar, ProgressFinish, ProgressStyle};
-use num::integer::gcd;
-use primal;
-use rand::seq::SliceRandom;
-use rand::thread_rng;
-use rayon::prelude::*;
-use std::collections::{HashMap, HashSet};
-use tabled::{
-    object::{Rows, Segment},
-    Alignment, MaxWidth, Modify, Style, Table, Tabled,
-};
-static mut BEST: u32 = 0;
+use std::collections::HashMap;
 
 fn explore(
     args: &Cli,
@@ -124,6 +106,7 @@ struct Blueprint {
     #[clap(short, long)]
     geode_robot_cost: Vec<u32>,
 }
+
 #[derive(Parser, Debug)]
 struct Cli {
     #[clap(short, long, default_value_t = 1)]
@@ -134,7 +117,6 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
-    // let pb = ProgressBar::new(args.nmax as u64);
 
     let tests = HashMap::from([
         (
@@ -442,7 +424,7 @@ fn main() {
     let blueprint = tests.get(&args.blueprint).expect("Blueprint not found");
 
     let mut best = 0;
-    let ans = explore(&args, &blueprint, &mut best, (1, 0, 0, 0), (0, 0, 0, 0), 0);
+    let ans = explore(&args, blueprint, &mut best, (1, 0, 0, 0), (0, 0, 0, 0), 0);
     println!(
         "Answer for blueprint {} is {} (score = {})",
         blueprint.id,
